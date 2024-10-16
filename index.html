@@ -44,21 +44,66 @@
             predefinedPlayers.push(participants[participants.length - 1].name);
         }
 
-        // Сетка матчей
-        const bracket = document.getElementById('tournamentBracket');
+        // Получаем текущий раунд из localStorage
+        let currentRound = JSON.parse(localStorage.getItem('currentRound')) || 1;
+        let matchResults = JSON.parse(localStorage.getItem('matchResults')) || {};
 
-        if (predefinedPlayers.length < 12) {
-            bracket.innerHTML = '<p>Not enough players. Please register more players!</p>';
-        } else {
-            // Формируем турнирную сетку для 12 участников
-            const matches = [];
-            for (let i = 0; i < 6; i++) {
-                const player1 = predefinedPlayers[i * 2];
-                const player2 = predefinedPlayers[i * 2 + 1];
-                matches.push(`<div class="match">${player1} vs ${player2}</div>`);
-            }
-            bracket.innerHTML = matches.join('');
+        // Функция для обновления результатов и перехода на следующий раунд
+        function saveResultsAndProceed() {
+            const scores = document.querySelectorAll('.score-input');
+            scores.forEach((input, index) => {
+                const matchId = `round${currentRound}_match${index}`;
+                matchResults[matchId] = input.value;
+            });
+            localStorage.setItem('matchResults', JSON.stringify(matchResults));
+            
+            // Переходим к следующему раунду, если текущий раунд завершен
+            currentRound++;
+            localStorage.setItem('currentRound', JSON.stringify(currentRound));
+            renderBracket();
         }
+
+        // Функция отображения турнирной сетки
+        function renderBracket() {
+            const bracket = document.getElementById('tournamentBracket');
+            bracket.innerHTML = '';
+
+            // Количество участников на текущем этапе
+            let players = predefinedPlayers;
+
+            if (currentRound > 1) {
+                players = [];
+                // Добавляем победителей предыдущих матчей в список участников текущего раунда
+                for (let i = 0; i < 6; i++) {
+                    const matchId = `round${currentRound-1}_match${i}`;
+                    const score = matchResults[matchId];
+                    const winner = i % 2 === 0 ? predefinedPlayers[i] : predefinedPlayers[i + 1];
+                    players.push(winner);
+                }
+            }
+
+            const matches = [];
+            const numMatches = players.length / 2;
+
+            for (let i = 0; i < numMatches; i++) {
+                const player1 = players[i * 2];
+                const player2 = players[i * 2 + 1];
+                const matchId = `round${currentRound}_match${i}`;
+                const score = matchResults[matchId] || '';
+
+                matches.push(`
+                    <div class="match">
+                        ${player1} vs ${player2}
+                        <input class="score-input" type="text" placeholder="Enter score" value="${score}">
+                    </div>
+                `);
+            }
+
+            bracket.innerHTML = matches.join('') + `<button onclick="saveResultsAndProceed()">Next Round</button>`;
+        }
+
+        // Отображаем турнирную сетку при загрузке страницы
+        renderBracket();
     </script>
 </body>
 </html>
