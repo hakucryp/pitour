@@ -60,9 +60,10 @@
         function saveResultsAndProceed() {
             const scores = document.querySelectorAll('.score-input');
             scores.forEach((input, index) => {
-                const matchId = `round${currentRound}_match${index}`;
-                const score = input.value;
-                matchResults[matchId] = score;
+                const matchId = `round${currentRound}_match${Math.floor(index / 2)}`;
+                const playerNum = index % 2 === 0 ? 'player1' : 'player2';
+                if (!matchResults[matchId]) matchResults[matchId] = {};
+                matchResults[matchId][playerNum] = input.value;
             });
             localStorage.setItem('matchResults', JSON.stringify(matchResults));
 
@@ -90,7 +91,9 @@
                 players = [];
                 for (let i = 0; i < 6; i++) {
                     const matchId = `round${currentRound-1}_match${i}`;
-                    const winner = matchResults[matchId] === '11' ? predefinedPlayers[i * 2] : predefinedPlayers[i * 2 + 1];
+                    const player1Score = matchResults[matchId]?.player1 || 0;
+                    const player2Score = matchResults[matchId]?.player2 || 0;
+                    const winner = player1Score == 11 ? predefinedPlayers[i * 2] : predefinedPlayers[i * 2 + 1];
                     players.push(winner);
                 }
             }
@@ -102,16 +105,17 @@
                 const player1 = players[i * 2];
                 const player2 = players[i * 2 + 1];
                 const matchId = `round${currentRound}_match${i}`;
-                const score = matchResults[matchId] || '';
+                const player1Score = matchResults[matchId]?.player1 || '';
+                const player2Score = matchResults[matchId]?.player2 || '';
 
                 matches.push(`
                     <div class="match">
-                        ${player1} vs ${player2}
-                        <label>Score:
-                            <select class="score-input">
-                                ${[...Array(12).keys()].map(n => `<option value="${n}" ${n == score ? 'selected' : ''}>${n}</option>`).join('')}
-                            </select>
-                        </label>
+                        ${player1} <select class="score-input">
+                            ${[...Array(12).keys()].map(n => `<option value="${n}" ${n == player1Score ? 'selected' : ''}>${n}</option>`).join('')}
+                        </select> vs
+                        ${player2} <select class="score-input">
+                            ${[...Array(12).keys()].map(n => `<option value="${n}" ${n == player2Score ? 'selected' : ''}>${n}</option>`).join('')}
+                        </select>
                     </div>
                 `);
             }
@@ -127,8 +131,10 @@
 
             for (let i = 0; i < 6; i++) {
                 const matchId = `round${currentRound-1}_match${i}`;
-                const winner = matchResults[matchId] === '11' ? predefinedPlayers[i * 2] : predefinedPlayers[i * 2 + 1];
-                const loser = matchResults[matchId] !== '11' ? predefinedPlayers[i * 2] : predefinedPlayers[i * 2 + 1];
+                const player1Score = matchResults[matchId]?.player1 || 0;
+                const player2Score = matchResults[matchId]?.player2 || 0;
+                const winner = player1Score == 11 ? predefinedPlayers[i * 2] : predefinedPlayers[i * 2 + 1];
+                const loser = player1Score != 11 ? predefinedPlayers[i * 2] : predefinedPlayers[i * 2 + 1];
 
                 resultsTable.innerHTML += `<tr><td>${winner}</td><td>Winner</td></tr>`;
                 resultsTable.innerHTML += `<tr><td>${loser}</td><td>Eliminated</td></tr>`;
