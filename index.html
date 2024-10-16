@@ -19,10 +19,24 @@
     </header>
     <main>
         <section>
-            <h2>Current Tournament Bracket</h2>
+            <h2 id="roundTitle">Current Tournament Bracket</h2>
             <div id="tournamentBracket">
                 <!-- Турнирная сетка будет отображаться здесь -->
             </div>
+        </section>
+        <section id="finalResults" style="display:none;">
+            <h2>Final Tournament Results</h2>
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Результаты будут добавлены сюда -->
+                </tbody>
+            </table>
         </section>
     </main>
     <footer>
@@ -30,54 +44,53 @@
     </footer>
 
     <script>
-        // Имена предустановленных участников
         const predefinedPlayers = [
             'Alice', 'Bob', 'Charlie', 'Dave', 'Eve', 'Frank',
             'Grace', 'Hank', 'Ivy', 'Jack', 'Karen'
         ];
 
-        // Получаем список зарегистрированных участников из localStorage
         let participants = JSON.parse(localStorage.getItem('participants')) || [];
-
-        // Если зарегистрированных игроков больше, чем один, добавляем их к списку предустановленных участников
         if (participants.length > 0) {
             predefinedPlayers.push(participants[participants.length - 1].name);
         }
 
-        // Получаем текущий раунд из localStorage
         let currentRound = JSON.parse(localStorage.getItem('currentRound')) || 1;
         let matchResults = JSON.parse(localStorage.getItem('matchResults')) || {};
 
-        // Функция для обновления результатов и перехода на следующий раунд
         function saveResultsAndProceed() {
             const scores = document.querySelectorAll('.score-input');
             scores.forEach((input, index) => {
                 const matchId = `round${currentRound}_match${index}`;
-                matchResults[matchId] = input.value;
+                const score = input.value;
+                matchResults[matchId] = score;
             });
             localStorage.setItem('matchResults', JSON.stringify(matchResults));
-            
-            // Переходим к следующему раунду, если текущий раунд завершен
-            currentRound++;
-            localStorage.setItem('currentRound', JSON.stringify(currentRound));
-            renderBracket();
+
+            if (isFinalRound()) {
+                showFinalResults();
+            } else {
+                currentRound++;
+                localStorage.setItem('currentRound', JSON.stringify(currentRound));
+                renderBracket();
+            }
         }
 
-        // Функция отображения турнирной сетки
+        function isFinalRound() {
+            return predefinedPlayers.length / Math.pow(2, currentRound) <= 1;
+        }
+
         function renderBracket() {
             const bracket = document.getElementById('tournamentBracket');
+            const roundTitle = document.getElementById('roundTitle');
             bracket.innerHTML = '';
+            roundTitle.textContent = currentRound === 3 ? 'Final' : `Round ${currentRound}`;
 
-            // Количество участников на текущем этапе
             let players = predefinedPlayers;
-
             if (currentRound > 1) {
                 players = [];
-                // Добавляем победителей предыдущих матчей в список участников текущего раунда
                 for (let i = 0; i < 6; i++) {
                     const matchId = `round${currentRound-1}_match${i}`;
-                    const score = matchResults[matchId];
-                    const winner = i % 2 === 0 ? predefinedPlayers[i] : predefinedPlayers[i + 1];
+                    const winner = matchResults[matchId] === '11' ? predefinedPlayers[i * 2] : predefinedPlayers[i * 2 + 1];
                     players.push(winner);
                 }
             }
@@ -94,7 +107,11 @@
                 matches.push(`
                     <div class="match">
                         ${player1} vs ${player2}
-                        <input class="score-input" type="text" placeholder="Enter score" value="${score}">
+                        <label>Score:
+                            <select class="score-input">
+                                ${[...Array(12).keys()].map(n => `<option value="${n}" ${n == score ? 'selected' : ''}>${n}</option>`).join('')}
+                            </select>
+                        </label>
                     </div>
                 `);
             }
@@ -102,7 +119,22 @@
             bracket.innerHTML = matches.join('') + `<button onclick="saveResultsAndProceed()">Next Round</button>`;
         }
 
-        // Отображаем турнирную сетку при загрузке страницы
+        function showFinalResults() {
+            const finalResultsSection = document.getElementById('finalResults');
+            finalResultsSection.style.display = 'block';
+            const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+            resultsTable.innerHTML = '';
+
+            for (let i = 0; i < 6; i++) {
+                const matchId = `round${currentRound-1}_match${i}`;
+                const winner = matchResults[matchId] === '11' ? predefinedPlayers[i * 2] : predefinedPlayers[i * 2 + 1];
+                const loser = matchResults[matchId] !== '11' ? predefinedPlayers[i * 2] : predefinedPlayers[i * 2 + 1];
+
+                resultsTable.innerHTML += `<tr><td>${winner}</td><td>Winner</td></tr>`;
+                resultsTable.innerHTML += `<tr><td>${loser}</td><td>Eliminated</td></tr>`;
+            }
+        }
+
         renderBracket();
     </script>
 </body>
