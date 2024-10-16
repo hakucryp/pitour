@@ -103,16 +103,15 @@ form button:hover {
     font-weight: bold;
 }
 
-.match input.score-input {
-    width: 50%;
+.match label {
     margin-top: 10px;
-    padding: 5px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    display: block;
 }
 
-/* Стили для кнопки перехода на следующий раунд */
+.score-input {
+    margin-left: 10px;
+}
+
 button {
     margin-top: 20px;
     padding: 10px 20px;
@@ -126,4 +125,25 @@ button {
 
 button:hover {
     background-color: #45a049;
+}
+
+/* Стили для таблицы с результатами */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+th {
+    background-color: #f2f2f2;
+    text-align: left;
+}
+
+td {
+    text-align: left;
 }
