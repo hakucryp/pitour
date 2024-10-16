@@ -20,7 +20,7 @@
     <main>
         <section>
             <h2>Register for the Tournament</h2>
-            <form action="tournament.html" method="post">
+            <form id="registrationForm">
                 <label for="name">Name:</label>
                 <input type="text" id="name" name="name" required>
                 
@@ -34,5 +34,28 @@
     <footer>
         <p>&copy; 2024 Pickleball Tournament</p>
     </footer>
+
+    <script>
+        // Обработка формы регистрации
+        const form = document.getElementById('registrationForm');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();  // Останавливаем стандартное поведение формы
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+
+            // Получаем текущий список участников из localStorage
+            let participants = JSON.parse(localStorage.getItem('participants')) || [];
+
+            // Добавляем нового участника
+            participants.push({ name, email });
+
+            // Сохраняем список участников обратно в localStorage
+            localStorage.setItem('participants', JSON.stringify(participants));
+
+            // Перенаправляем на главную страницу
+            window.location.href = 'index.html';
+        });
+    </script>
 </body>
 </html>
