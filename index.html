@@ -19,13 +19,28 @@
     </header>
     <main>
         <section>
-            <h2>Welcome to the Pickleball Tournament</h2>
-            <p>Join the tournament, play matches, and compete to be the champion!</p>
-            <a href="register.html" class="button">Register Now</a>
+            <h2>Current Tournament Bracket</h2>
+            <div id="tournamentBracket">
+                <!-- Турнирная сетка будет отображаться здесь -->
+            </div>
         </section>
     </main>
     <footer>
         <p>&copy; 2024 Pickleball Tournament</p>
     </footer>
-</body>
-</html>
+
+    <script>
+        // Получаем список участников из localStorage
+        let participants = JSON.parse(localStorage.getItem('participants')) || [];
+
+        // Сетка матчей
+        const bracket = document.getElementById('tournamentBracket');
+
+        if (participants.length < 12) {
+            bracket.innerHTML = '<p>Not enough players. Please register more players!</p>';
+        } else {
+            // Формируем турнирную сетку для 12 участников
+            const matches = [];
+            for (let i = 0; i < 6; i++) {
+                const player1 = participants[i * 2].name || `Player ${i * 2 + 1}`;
+                const player2 = participants[i * 2 + 1].name || `Player
