@@ -12,7 +12,7 @@
         <nav>
             <ul>
                 <li><a href="register.html">Register</a></li>
-                <li><a href="tournament.html">Tournament</a></li>
+                <li><a href="index.html">Tournament</a></li>
                 <li><a href="ranking.html">Ranking</a></li>
             </ul>
         </nav>
@@ -30,17 +30,35 @@
     </footer>
 
     <script>
-        // Получаем список участников из localStorage
+        // Имена предустановленных участников
+        const predefinedPlayers = [
+            'Alice', 'Bob', 'Charlie', 'Dave', 'Eve', 'Frank',
+            'Grace', 'Hank', 'Ivy', 'Jack', 'Karen'
+        ];
+
+        // Получаем список зарегистрированных участников из localStorage
         let participants = JSON.parse(localStorage.getItem('participants')) || [];
+
+        // Если зарегистрированных игроков больше, чем один, добавляем их к списку предустановленных участников
+        if (participants.length > 0) {
+            predefinedPlayers.push(participants[participants.length - 1].name);
+        }
 
         // Сетка матчей
         const bracket = document.getElementById('tournamentBracket');
 
-        if (participants.length < 12) {
+        if (predefinedPlayers.length < 12) {
             bracket.innerHTML = '<p>Not enough players. Please register more players!</p>';
         } else {
             // Формируем турнирную сетку для 12 участников
             const matches = [];
             for (let i = 0; i < 6; i++) {
-                const player1 = participants[i * 2].name || `Player ${i * 2 + 1}`;
-                const player2 = participants[i * 2 + 1].name || `Player
+                const player1 = predefinedPlayers[i * 2];
+                const player2 = predefinedPlayers[i * 2 + 1];
+                matches.push(`<div class="match">${player1} vs ${player2}</div>`);
+            }
+            bracket.innerHTML = matches.join('');
+        }
+    </script>
+</body>
+</html>
